@@ -14,14 +14,6 @@ import (
 
 // Serves the webpage created by createRoot()
 func (m model) root(writer http.ResponseWriter, request *http.Request) {
-	if m.modify("ring") {
-		log.Println("Ring modified, clearing field and re-parsing")
-		m.parseList()
-	}
-	if m.modify("index") {
-		log.Println("Index modified, clearing field and re-parsing")
-		m.parseIndex()
-	}
 	var table string
 	for _, member := range m.ring {
 		table = table + "  <tr>\n"
@@ -40,10 +32,6 @@ func (m model) root(writer http.ResponseWriter, request *http.Request) {
 // next would be out-of-bounds, and ensuring the destination returns a 200 OK
 // status before performing the redirect.
 func (m model) next(writer http.ResponseWriter, request *http.Request) {
-	if m.modify("ring") {
-		log.Println("Ring modified, clearing field and re-parsing")
-		m.parseList()
-	}
 	host := request.URL.Query().Get("host")
 	scheme, success := "https://", false
 	length := len(m.ring)
@@ -74,10 +62,6 @@ please `+*flagContactString, 500)
 // next would be out-of-bounds, and ensuring the destination returns a 200 OK
 // status before performing the redirect.
 func (m model) previous(writer http.ResponseWriter, request *http.Request) {
-	if m.modify("ring") {
-		log.Println("Ring modified, clearing field and re-parsing")
-		m.parseList()
-	}
 	host := request.URL.Query().Get("host")
 	scheme := "https://"
 	length := len(m.ring)
@@ -112,10 +96,6 @@ please `+*flagContactString, 500)
 
 // Redirects the visitor to a random member
 func (m model) random(writer http.ResponseWriter, request *http.Request) {
-	if m.modify("ring") {
-		log.Println("Ring modified, clearing field and re-parsing")
-		m.parseList()
-	}
 	rand.Seed(time.Now().Unix())
 	dest := "https://" + m.ring[rand.Intn(len(m.ring)-1)].url
 	http.Redirect(writer, request, dest, http.StatusFound)

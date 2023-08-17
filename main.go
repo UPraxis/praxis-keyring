@@ -21,10 +21,8 @@ type ring struct {
 }
 
 type model struct {
-	ring         []ring
-	index        *template.Template
-	ringModTime  int64
-	indexModTime int64
+	ring  []ring
+	index *template.Template
 }
 
 // Pre-define all of our flags
@@ -64,6 +62,14 @@ func main() {
 		for {
 			m.validateMembers()
 			time.Sleep(24 * time.Hour)
+		}
+	}()
+
+	// Spin off a second goroutine to re-read the list every 10 minutes
+	go func() {
+		for {
+			m.parseList()
+			time.Sleep(10 * time.Minute)
 		}
 	}()
 

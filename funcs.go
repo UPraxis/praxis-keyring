@@ -9,7 +9,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 )
 
@@ -26,54 +25,21 @@ func (m *model) parseIndex() {
 		log.Fatal(err)
 	}
 	m.index = tmpl
-	tmplStat, err := os.Stat(*flagIndex)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	m.indexModTime = tmplStat.ModTime().Unix()
 }
 
 // List parses the list of members, appends the data to a slice of type list,
 // then returns the slice
 func (m *model) parseList() {
-	m.ring = nil
 	file, err := ioutil.ReadFile(*flagMembers)
 	if err != nil {
 		log.Fatal("Error while loading list of webring members: ", err)
 	}
 	lines := strings.Split(string(file), "\n")
+	m.ring = nil
 	for _, line := range lines[:len(lines)-1] {
 		fields := strings.Fields(line)
 		m.ring = append(m.ring, ring{handle: fields[0], url: fields[1]})
 	}
-	fileStat, err := os.Stat(*flagMembers)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	m.ringModTime = fileStat.ModTime().Unix()
-}
-
-// Modify takes arguments "index" or "ring" and returns true if either have been
-// modified since last read
-func (m *model) modify(a string) bool {
-	if a == "ring" {
-		ringStat, err := os.Stat(*flagMembers)
-		if err != nil {
-			log.Fatalln(err)
-		}
-		curRingModTime := ringStat.ModTime().Unix()
-		return m.ringModTime < curRingModTime
-	} else if a == "index" {
-		indexStat, err := os.Stat(*flagIndex)
-		if err != nil {
-			log.Fatalln(err)
-		}
-		curIndexModTime := indexStat.ModTime().Unix()
-		return m.indexModTime < curIndexModTime
-	} else {
-		log.Fatalln("Please call modify() with argument of either \"index\" or \"ring\"")
-	}
-	return true
 }
 
 func is200(site string) bool {
