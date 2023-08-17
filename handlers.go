@@ -9,7 +9,6 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
-	"path/filepath"
 	"time"
 )
 
@@ -27,12 +26,6 @@ func (m model) root(writer http.ResponseWriter, request *http.Request) {
 		log.Println("Error executing template: " + err.Error())
 		http.Error(writer, "Internal server error", 500)
 	}
-}
-
-// Serves static files from the static directory
-func (m model) static(writer http.ResponseWriter, request *http.Request) {
-	log.Println("Serving static file: " + filepath.Clean(request.URL.Path))
-	http.ServeFile(writer, request, filepath.Clean(request.URL.Path))
 }
 
 // Redirects the visitor to the next member, wrapping around the list if the

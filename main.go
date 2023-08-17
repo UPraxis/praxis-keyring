@@ -81,7 +81,7 @@ func main() {
 	mux.HandleFunc("/next", m.next)
 	mux.HandleFunc("/previous", m.previous)
 	mux.HandleFunc("/random", m.random)
-	mux.HandleFunc("/static", m.static)
+	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	mux.HandleFunc("/"+*flagValidationLog, m.validationLog)
 	mux.HandleFunc("/", m.root)
 
@@ -94,7 +94,7 @@ func main() {
 
 func (m *model) init() {
 	flag.Parse()
-	log.Println("Listening on", *flagListen)
+	log.Println("Listening on", "http://"+*flagListen)
 	if *flagHost == "" {
 		log.Fatalln("Host flag is required")
 	}
