@@ -78,11 +78,12 @@ func main() {
 		Handler: mux,
 	}
 
-	mux.HandleFunc("/", m.root)
 	mux.HandleFunc("/next", m.next)
 	mux.HandleFunc("/previous", m.previous)
 	mux.HandleFunc("/random", m.random)
+	mux.HandleFunc("/static", m.static)
 	mux.HandleFunc("/"+*flagValidationLog, m.validationLog)
+	mux.HandleFunc("/", m.root)
 
 	if err := httpServer.ListenAndServe(); err == http.ErrServerClosed {
 		log.Println("Web server closed")
