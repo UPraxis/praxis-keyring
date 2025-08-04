@@ -20,4 +20,4 @@ RUN go build
 EXPOSE 2857
 
 # Run the application
-CMD ["./go-webring"]
+CMD ["./go-webring --host ring.upraxis.org"]
