@@ -36,4 +36,4 @@ USER appuser
 EXPOSE 3000
 
 # Start the server
-CMD ["./go-webring", "-l", "0.0.0.0:3000", "-h", "yourdomain.com", "-i", "index.html", "-m", "list.txt", "-v", "validation.log"]
+CMD ["./go-webring", "-l", "0.0.0.0:3000", "-h", "ring.upraxis.org", "-i", "index.html", "-m", "list.txt", "-v", "validation.log"]
