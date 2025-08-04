@@ -1,26 +1,37 @@
 # Use official Go image as base
-FROM golang:latest
+FROM golang:1.22-alpine
+
+# Install pandoc and other dependencies
+RUN apk add --no-cache pandoc git
 
 # Set working directory
 WORKDIR /app
 
-# Install pandoc and git
-RUN apt-get update && apt-get install -y pandoc git
+# Copy go-webring source code into the container
+COPY . .
 
-# Clone the repository
-RUN git clone https://github.com/UPraxis/praxis-keyring.git .
+# Generate the homepage HTML from Markdown (if index.md exists)
+RUN if [ -f index.md ]; then pandoc -s index.md -o index.html; fi
 
-# Optional: Generate HTML from markdown (if index.md exists)
-RUN [ -f index.md ] && pandoc -s index.md -o index.html || echo "index.md not found"
+# Build the Go binary
+RUN go build -o go-webring .
 
-# Download Go dependencies
-RUN go mod tidy
-
-# Build the Go application with the correct name
-RUN go build -o go-webring
-
-# Expose the port (default is 2857 unless overridden)
+# Expose the default port
 EXPOSE 2857
 
-# Run the application (split command and arguments)
-CMD ["./go-webring", "--host", "ring.upraxis.org"]
+# Set environment variable defaults (override with Coolify env vars)
+ENV HOST="ring.upraxis.org"
+ENV LISTEN="0.0.0.0:2857"
+ENV MEMBERS="list.txt"
+ENV INDEX="index.html"
+ENV VALIDATIONLOG="validation.log"
+ENV CONTACT="contact the admin and let them know what's up"
+
+# Run the application
+CMD ["./go-webring", \
+     "--host", "$HOST", \
+     "--listen", "$LISTEN", \
+     "--members", "$MEMBERS", \
+     "--index", "$INDEX", \
+     "--validationlog", "$VALIDATIONLOG", \
+     "--contact", "$CONTACT"]
