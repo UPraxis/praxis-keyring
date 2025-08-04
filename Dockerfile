@@ -8,8 +8,8 @@ WORKDIR /app
 COPY . .
 
 # Optional: generate index.html from index.md if needed
-# RUN apt-get update && apt-get install -y pandoc
-# RUN pandoc -s index.md -o index.html
+RUN apt-get update && apt-get install -y pandoc
+RUN pandoc -s index.md -o index.html
 
 # Build the go-webring binary
 RUN go build -o go-webring
