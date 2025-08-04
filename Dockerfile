@@ -1,48 +1,43 @@
-# Stage 1: Build stage
 FROM golang:1.22 AS builder
 
-# Set working directory inside the container
-WORKDIR /app
-
-# Copy go.mod and go.sum first for caching dependencies
-COPY go.mod go.sum ./
-RUN go mod download
-
-# Copy all source files, including index.md, list.txt, static folder, etc.
-COPY . .
-
-# Install pandoc for markdown to HTML conversion
+# Install pandoc for markdown to html conversion
 RUN apt-get update && apt-get install -y pandoc
 
-# Generate index.html from index.md
+# Set working directory and copy code
+WORKDIR /app
+COPY . .
+
+# Generate index.html from index.md inside go-webring folder
+WORKDIR /app/go-webring
 RUN pandoc -s index.md -o index.html
 
-# Build the Go binary (adjust main.go if needed)
+# Build the Go binary
 RUN go build -o go-webring
 
-# Stage 2: Runtime image - small and secure
+# Final image — use minimal base image
 FROM debian:bookworm-slim
 
-# Create a non-root user for security
+# Install ca-certificates (often needed by Go apps)
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+
+# Create a non-root user
 RUN useradd -m appuser
 
-# Set working directory for runtime
+# Set working directory
 WORKDIR /home/appuser
 
-# Copy binary and assets from the builder stage
-COPY --from=builder /app/go-webring .
-COPY --from=builder /app/index.html .
-COPY --from=builder /app/list.txt .
-COPY --from=builder /app/static ./static
+# Copy binary and generated files from builder stage
+COPY --from=builder /app/go-webring/go-webring .
+COPY --from=builder /app/go-webring/index.html .
+COPY --from=builder /app/go-webring/list.txt .
+COPY --from=builder /app/go-webring/static ./static
 
-# Change ownership to appuser (optional but recommended)
-RUN chown -R appuser:appuser /home/appuser
-
-# Switch to the non-root user
+# Use non-root user
 USER appuser
 
-# Expose the port your app listens on
-EXPOSE 3000
+# Expose port from env variable PORT or default 2857
+ENV PORT=2857
+EXPOSE $PORT
 
-# Run the binary with the required flags for the ring
-CMD ["./go-webring", "-l", "0.0.0.0:3000", "-h", "ring.upraxis.org", "-i", "index.html", "-m", "list.txt", "-v", "validation.log"]
+# Run the binary with flags, bind to 0.0.0.0 and port from env var
+CMD ["./go-webring", "-l", "0.0.0.0:${PORT}", "-h", "ring.upraxis.org", "-i", "index.html", "-m", "list.txt", "-v", "validation.log"]
