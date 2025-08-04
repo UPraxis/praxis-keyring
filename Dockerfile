@@ -7,11 +7,11 @@ RUN apt-get update && apt-get install -y pandoc
 WORKDIR /app
 COPY . .
 
-# Generate index.html from index.md inside go-webring folder
-WORKDIR /app/go-webring
+# Generate index.html from index.md (in /app)
 RUN pandoc -s index.md -o index.html
 
-# Build the Go binary
+# Build the Go binary (assuming main.go or go.mod is in /app/go-webring)
+WORKDIR /app/go-webring
 RUN go build -o go-webring
 
 # Final image — use minimal base image
@@ -28,7 +28,7 @@ WORKDIR /home/appuser
 
 # Copy binary and generated files from builder stage
 COPY --from=builder /app/go-webring/go-webring .
-COPY --from=builder /app/go-webring/index.html .
+COPY --from=builder /app/index.html .
 COPY --from=builder /app/go-webring/list.txt .
 COPY --from=builder /app/go-webring/static ./static
 
